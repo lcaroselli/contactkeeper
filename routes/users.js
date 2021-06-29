@@ -53,8 +53,6 @@ router.post(
 
       await user.save();
 
-      // res.send('User saved');
-
       // send back json web token to user
       const payload = {
         user: {
