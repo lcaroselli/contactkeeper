@@ -1,9 +1,12 @@
 const express = require('express');
 const { check, validationResult } = require('express-validator/check');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const router = express.Router();
+
 const User = require('../models/Users');
+const config = require('config');
 
 // instead of app.get, etc, can now just use router
 
@@ -50,9 +53,27 @@ router.post(
 
       await user.save();
 
-      res.send('User saved');
+      // res.send('User saved');
 
       // send back json web token to user
+      const payload = {
+        user: {
+          id: user.id,
+        },
+      };
+
+      jwt.sign(
+        payload,
+        config.get('jwtSecret'),
+        {
+          expiresIn: 36000,
+        },
+        (err, token) => {
+          if (err) {
+            res.json({ token });
+          }
+        }
+      );
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server Error');
