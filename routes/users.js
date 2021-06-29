@@ -1,23 +1,19 @@
 const express = require('express');
-const { check, validationResult } = require('express-validator/check');
+const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
-const router = express.Router();
+const config = require('config');
+const { check, validationResult } = require('express-validator');
 
 const User = require('../models/Users');
-const config = require('config');
 
-// instead of app.get, etc, can now just use router
-
-// Registering a user
-// '/' here is equivalent to api/users
-// POST api/users
-// @access public
+// @route     POST api/users
+// @desc      Regiter a user
+// @access    Public
 router.post(
   '/',
   [
-    check('name', 'Please add a Name').not().isEmpty(),
+    check('name', 'Please add name').not().isEmpty(),
     check('email', 'Please include a valid email').isEmail(),
     check(
       'password',
@@ -40,8 +36,8 @@ router.post(
       }
 
       user = new User({
-        email,
         name,
+        email,
         password,
       });
 
@@ -64,21 +60,17 @@ router.post(
         payload,
         config.get('jwtSecret'),
         {
-          expiresIn: 36000,
+          expiresIn: 360000,
         },
         (err, token) => {
-          if (err) {
-            res.json({ token });
-          }
+          if (err) throw err;
+          res.json({ token });
         }
       );
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server Error');
     }
-
-    // this is going to give me the data that is sent to the route
-    // res.send(req.body);
   }
 );
 

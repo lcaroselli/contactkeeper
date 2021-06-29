@@ -1,24 +1,29 @@
 const express = require('express');
 const router = express.Router();
-const { check, validationResult } = require('express-validator/check');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const config = require('config');
+const auth = require('../middleware/auth');
+const { check, validationResult } = require('express-validator');
 
 const User = require('../models/Users');
-const config = require('config');
 
-// instead of app.get, etc, can now just use router
-
-// GET api/auth
-// @access private
-// Get logged-in user
-router.get('/', (req, res) => {
-  res.send('Get logged-in user');
+// @route     GET api/auth
+// @desc      Get logged in user
+// @access    Private
+router.get('/', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    res.json(user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
 });
 
-// POST api/auth
-// @access public
-// Auth user and get token
+// @route     POST api/auth
+// @desc      Auth user & get token
+// @access    Public
 router.post(
   '/',
   [
@@ -26,7 +31,6 @@ router.post(
     check('password', 'Password is required').exists(),
   ],
   async (req, res) => {
-    // res.send('Log-in user');
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -51,7 +55,7 @@ router.post(
         return res.status(400).json({ msg: 'Invalid Credentials' });
       }
 
-      // send back json web token to user
+       // send back json web token to user
       const payload = {
         user: {
           id: user.id,
@@ -62,12 +66,11 @@ router.post(
         payload,
         config.get('jwtSecret'),
         {
-          expiresIn: 36000,
+          expiresIn: 360000,
         },
         (err, token) => {
-          if (err) {
-            res.json({ token });
-          }
+          if (err) throw err;
+          res.json({ token });
         }
       );
     } catch (err) {
