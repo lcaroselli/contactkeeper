@@ -14,6 +14,8 @@ const User = require('../models/Users');
 router.get('/', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
+    // the minus sign here means don't return the password
+    
     res.json(user);
   } catch (err) {
     console.error(err.message);
