@@ -29,6 +29,7 @@ const ContactForm = () => {
   const { email, name, phone, type } = contact;
 
   const onChange = (e) =>
+    // looking at each name value any input this method is called to determine the input that is targeted
     setContact({ ...contact, [e.target.name]: e.target.value });
 
   const onSubmit = (e) => {
